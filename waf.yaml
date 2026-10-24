@@ -1,0 +1,138 @@
+wafs:
+  name:
+    cloudflare:
+      id: 1
+      server: cloudflare
+      cookies:
+        - "cf_"
+        - "cf_clearance"
+        - "__cfruid"
+        - "cf_chl_"
+        - "__cflb"
+      ips:
+        - "104.16"
+        - "104.17"
+        - "104.18"
+        - "104.19"
+        - "104.20"
+        - "104.21"
+        - "104.22"
+        - "104.23"
+        - "104.24"
+        - "104.25"
+        - "104.26"
+        - "104.27"
+        - "104.28"
+        - "104.29"
+        - "104.30"
+        - "104.31"
+        - "172.64"
+        - "172.65"
+        - "172.66"
+        - "172.67"
+        - "172.68"
+        - "172.69"
+        - "172.70"
+        - "172.71"
+    akamai:
+      id: 2
+      server: akamai
+      cookies:
+        - "ak_bmsc"
+        - "bm_sv"
+        - "_abck"
+        - "bm_sz"
+        - "akavpau_"
+      ips:
+        - "23.32"
+        - "23.33"
+        - "23.34"
+        - "23.35"
+        - "23.36"
+        - "23.40"
+        - "23.50"
+        - "23.60"
+    imperva:
+      id: 3
+      server: imperva
+      cookies:
+        - "visid_incap_"
+        - "incap_ses_"
+        - "nlbi_"
+        - "reese84"
+        - "___utmvm"
+      ips:
+        - "45.60"
+        - "45.61"
+        - "192.229"
+        - "198.143"
+    sucuri:
+      id: 4
+      server: sucuri
+      cookies:
+        - "sucuri_cloudproxy_uuid"
+        - "sucuri_session"
+      ips:
+        - "185.93"
+        - "192.124"
+        - "198.143"
+        - "66.228"
+    fastly:
+      id: 5
+      server: fastly
+      cookies:
+        - "_fastly_session"
+        - "fastly_"
+      ips:
+        - "151.101"
+        - "199.232"
+    f5_bigip:
+      id: 6
+      server: bigip
+      cookies:
+        - "BIGipServer"
+        - "TS"
+        - "F5_ST"
+        - "LastAccess"
+      ips: []
+    aws_waf:
+      id: 7
+      server: awselb
+      cookies:
+        - "AWSALB"
+        - "AWSALBCORS"
+        - "aws-waf-token"
+      ips:
+        - "13.32"
+        - "13.33"
+        - "13.34"
+        - "13.35"
+        - "52.84"
+    barracuda:
+      id: 8
+      server: barracuda
+      cookies:
+        - "barra_counter_session"
+        - "bn_session"
+      ips: []
+    radware:
+      id: 9
+      server: radware
+      cookies:
+        - "rdwr"
+        - "rfgl"
+      ips: []
+    fortinet:
+      id: 10
+      server: fortigate
+      cookies:
+        - "FORTIWAFSID"
+      ips: []
+    citrix:
+      id: 11
+      server: netscaler
+      cookies:
+        - "NSC_"
+        - "citrix_ns_id"
+        - "nsc_aaac"
+      ips: []
