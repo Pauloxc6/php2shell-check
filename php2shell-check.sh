@@ -39,7 +39,7 @@ function loading_bar() {
     local progress=0
     local width=50  # Width of the progress bar
 
-    echo -ne "\n${green}[+] Analyzing ...${reset}\n"
+    echo -ne "\n${GREEN}[+] Analyzing ...${RESET}\n"
 
     while [[ $progress -le 100 ]]; do
         # Calculate the number of filled characters
@@ -51,7 +51,7 @@ function loading_bar() {
         local spaces=$(printf "%0.s-" $(seq 1 $empty))
 
         # Display the bar on the same line
-        printf "\r${blue}[%s%s] %3d%%${reset}" "$bar" "$spaces" "$progress"
+        printf "\r${BLUE}[%s%s] %3d%%${RESET}" "$bar" "$spaces" "$progress"
 
         # Increment progress
         progress=$((progress + 1))
@@ -59,7 +59,7 @@ function loading_bar() {
     done
 
     # Move to the next line after loading completes
-    echo -e "\n${green}[+] Done!${reset}\n"
+    echo -e "\n${GREEN}[+] Done!${RESET}\n"
 }
 
 function debug(){
@@ -141,7 +141,7 @@ function waf_check(){
     for fw in "${list_fws[@]}"; do
         waf_servers["$fw"]="$(yq -r ".wafs.name.${fw}.server" "$tpl_waf")"
         waf_ips["$fw"]="$(yq -r ".wafs.name.${fw}.ips[]" "$tpl_waf" 2>/dev/null | tr '\n' ' ')"
-        waf_cookies["$fw"]="$(yq -r ".wafs.name.${fw}.ips[]" "$tpl_waf" 2>/dev/null | tr '\n' ' ')"
+        waf_cookies["$fw"]="$(yq -r ".wafs.name.${fw}.cookies[]" "$tpl_waf" 2>/dev/null | tr '\n' ' ')"
     done
 
     # ====
