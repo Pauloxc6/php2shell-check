@@ -85,18 +85,47 @@ chmod +x php2shell-check.sh
 Run the script from your terminal using the available command-line flags:
 
 ```bash
-./php2shell-check.sh [OPTIONS]
+┌─[~/github-rep/security/CVEs/php2shell-check]─[paulo@voidlinux]─[192.168.4.50]
+└─╼ $ bash php2shell-check.sh --help
+
+   ___  __ _____  ___  ______ ________   __      _______ _____________ __
+  / _ \/ // / _ \|_  |/ __/ // / __/ /  / / ____/ ___/ // / __/ ___/ //_/
+ / ___/ _  / ___/ __/_\ \/ _  / _// /__/ /_/___/ /__/ _  / _// /__/ ,<   
+/_/  /_//_/_/  /____/___/_//_/___/____/____/   \___/_//_/___/\___/_/|_|  
+                                                                         
+By: @Pauloxc6
+Usage: bash php2shell-check.sh [OPTIONS]
+
+Options:
+    -h, --help               Display this help message
+    -d, --debug              Enable mode debuging
+
+    Basic:
+    --uri <uri>              Enables URI connection support | Ex: php://example.com:80
+    -u, --url <url>          Target URL (for 'web' mode)
+    -p, --port <port>        Target port (default: standard HTTP/HTTPS)
+    -m, --mod <mod>          Operation mode: 'web' (remote HTTP check) or 'local' (use local PHP CLI version check)
+    
+    Misc:
+    -c, --cookie <string>    Cookie string to include in requests (e.g., session cookies)
+    -a, --user-agent <str>   Custom User-Agent string
+    -s, --ssl                Enable HTTPS/SSL connection
+    --no-bar                 Disables the progress bar (Useful for crontab services)
+
+    Output:
+    -o, --output             Enable the saving of information! Ex: -o csv:foo (CSV, JSON, YAML)
+    -f, --separator          Change the type of delimiter! Supported: | , ; :
+
+Examples:
+    # Check a remote web target
+    bash php2shell-check.sh -u example.com -p 443 -m web -s
+    bash php2shell-check.sh --uri php://example.com:443 -m web -s
+    bash php2shell-check.sh --uri php://example.com:8080 --output json:filename
+    bash php2shell-check.sh --uri php://example.com:8080 --output csv:filename -f ';'
+
+    # Check using local PHP CLI
+    bash php2shell-check.sh -m local
 ```
-
-### Command-Line Arguments
-
-* `-h, --help`: Display the help message and exit.
-* `-u <url>`: Target URL or hostname for remote `web` mode.
-* `-p <port>`: Target port (defaults typically to `443` for HTTPS or `80` for HTTP).
-* `-m <mod>`: Operation mode (`web` for remote target analysis or `local` for local PHP CLI auditing).
-* `-c <cookie>`: Custom cookie string to include in web requests.
-* `-a <user-agent>`: Custom User-Agent string.
-* `-s, --ssl`: Forces the use of HTTPS and triggers SSL validation checks.
 
 ### Examples
 

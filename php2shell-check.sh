@@ -6,16 +6,19 @@
 export LANG=C
 export LC_ALL=C
 
-export RESET="\e[0m"
-export RED="\e[31;1m"
-export GREEN="\e[32;1m"
-export YELLOW="\e[33;1m"
-export BLUE="\e[34;1m"
-export PURPLE="\e[35;1m"
-export CYAN="\e[36;1m"
-export WHITE="\e[37;1m"
+export RESET=$'\e[0m'
+export RED=$'\e[31;1m'
+export GREEN=$'\e[32;1m'
+export YELLOW=$'\e[33;1m'
+export BLUE=$'\e[34;1m'
+export PURPLE=$'\e[35;1m'
+export CYAN=$'\e[36;1m'
+export WHITE=$'\e[37;1m'
 
 hostCheck="google.com"
+
+bar=0
+version="v1.1.0"
 
 #=================================
 # Messages
@@ -31,6 +34,33 @@ msgaction[php81]="81,End of life,Move to a supported branch or verify a complete
 #=================================
 # Functions
 #=================================
+
+function loading_bar() {
+    local progress=0
+    local width=50  # Width of the progress bar
+
+    echo -ne "\n${green}[+] Analyzing ...${reset}\n"
+
+    while [[ $progress -le 100 ]]; do
+        # Calculate the number of filled characters
+        local filled=$((progress * width / 100))
+        local empty=$((width - filled))
+
+        # Create the bar
+        local bar=$(printf "%0.s#" $(seq 1 $filled))
+        local spaces=$(printf "%0.s-" $(seq 1 $empty))
+
+        # Display the bar on the same line
+        printf "\r${blue}[%s%s] %3d%%${reset}" "$bar" "$spaces" "$progress"
+
+        # Increment progress
+        progress=$((progress + 1))
+        sleep 0.05  # Pause to simulate loading
+    done
+
+    # Move to the next line after loading completes
+    echo -e "\n${green}[+] Done!${reset}\n"
+}
 
 function debug(){
     # shellcheck disable=SC2329
@@ -53,16 +83,29 @@ Usage: bash php2shell-check.sh [OPTIONS]
 Options:
     -h, --help               Display this help message
     -d, --debug              Enable mode debuging
+
+    Basic:
+    --uri <uri>              Enables URI connection support | Ex: php://example.com:80
     -u, --url <url>          Target URL (for 'web' mode)
     -p, --port <port>        Target port (default: standard HTTP/HTTPS)
     -m, --mod <mod>          Operation mode: 'web' (remote HTTP check) or 'local' (use local PHP CLI version check)
+    
+    Misc:
     -c, --cookie <string>    Cookie string to include in requests (e.g., session cookies)
     -a, --user-agent <str>   Custom User-Agent string
     -s, --ssl                Enable HTTPS/SSL connection
+    --no-bar                 Disables the progress bar (Useful for crontab services)
+
+    Output:
+    -o, --output             Enable the saving of information! Ex: -o csv:foo (CSV, JSON, YAML)
+    -f, --separator          Change the type of delimiter! Supported: | , ; :
 
 Examples:
     # Check a remote web target
     bash php2shell-check.sh -u example.com -p 443 -m web -s
+    bash php2shell-check.sh --uri php://example.com:443 -m web -s
+    bash php2shell-check.sh --uri php://example.com:8080 --output json:filename
+    bash php2shell-check.sh --uri php://example.com:8080 --output csv:filename -f ';'
 
     # Check using local PHP CLI
     bash php2shell-check.sh -m local
@@ -187,20 +230,33 @@ function __check_ssl(){
 
 function web(){
 
+    [[ $source_schema != "php" ]] && {
+        echo -e "${RED}[!] The format for uri should be: ${WHITE}php://example:80${RESET}"
+        return 1 
+    }
+
+    if [[ "$uri" -eq 1 && $source_schema == "php" ]]; then
+        url=$( echo "${source_authority}" | cut -d: -f1)
+        port=$( echo "${source_authority}" | cut -d: -f2)
+    fi
+
     outputsite=$(pwd)
     outputfile="$outputsite/outputs/$url/site.temp"
 
-    echo -e "${GREEN}[${WHITE}*${GREEN}] Checking Connection With: ${BLUE}http://${url}:${port}${RESET}"
+    echo -e "${GREEN}[${WHITE}*${GREEN}] Checking Connection With: ${BLUE}${source_schema:-http}://${url}:${port}${RESET}"
     if ! ping -w1 -c 1 "${url}" >/dev/null 2>&1; then
-        :
+        echo -e "${RED}[!] Host inactive or unreachable: ${BLUE}${url}${RESET}"
+        return 1
     fi
 
     if ! nc "${url}" "${port:-443}" >/dev/null 2>&1 <<< "GET / HTTP/1.1"; then
-        :
+        echo -e "${RED}[!] Failed to connect to port: ${BLUE}${port}${RESET}"
+        return 1
     fi
 
     if ! mkdir -p "${outputsite}/outputs/${url}" ;then
-        :
+        echo -e "${RED}[!] The path does not exist is this being created!${RESET}"
+        return 1
     fi
 
     # Testa se o diretório existe
@@ -213,7 +269,7 @@ function web(){
 
     # Testa se está ativado o SSL
     # shellcheck disable=SC2154
-    if [[ "${ssl_on:-0}" == 1 ]]; then     
+    if [[ "${ssl_on:-0}" == 1 ]]; then
         if __check_ssl; then
             curl -A "$useragent" \
             --cookie "${cookiecurl}" \
@@ -230,6 +286,9 @@ function web(){
     fi
 
     echo -e "\n${WHITE}[${GREEN}+${WHITE}] Starting Banner Capture${RESET}"
+
+    [ "$bar" -eq 0 ] && loading_bar
+
     while read -r line; do
         line=$(echo "$line" | tr -d '\r')
 
@@ -267,10 +326,10 @@ function web(){
             echo -e "${WHITE}[${BLUE}-${WHITE}] ${CYAN}Lang:${WHITE}${langType:-NULL}${RESET}"
             echo -e "\n${WHITE}[${GREEN}+${WHITE}] Validating the vulnerability${RESET}"
 
-            local varfilter="${langType//PHP\//}"
-            local varfilter="${varfilter#"${varfilter%%[![:space:]]*}"}"
-            local phpbranch="$(echo "${varfilter//$'\r'/}"  | awk -F'.' '{print $1 $2}')"
-            local phpfullver="$(echo "${varfilter//$'\r'/}" | awk -F'.' '{print $1 $2 $3}')"
+            varfilter="${langType//PHP\//}"
+            varfilter="${varfilter#"${varfilter%%[![:space:]]*}"}"
+            phpbranch="$(echo "${varfilter//$'\r'/}"  | awk -F'.' '{print $1 $2}')"
+            phpfullver="$(echo "${varfilter//$'\r'/}" | awk -F'.' '{print $1 $2 $3}')"
             
             for msgact in "${msgaction[@]}"; do
 
@@ -280,6 +339,7 @@ function web(){
 
                 if [[ "${phpbranch}" == "${chkver}" && "${phpfullver}" -ge "${vercrr//./}" ]]; then
                     echo -e "${GREEN}[+] Not Vulnerable!${GREEN}"
+                    [[ "${outputc}" == 1 ]] && output
                     if ! rm -rf "${outputsite}/outputs/${url}" ; then : ;fi
                     return 0
                 fi
@@ -291,7 +351,9 @@ function web(){
                 fi
             done
 
-            echo -e "${RED}[!] Vulnerable host ${WHITE}[${CYAN}http://${url}:$port${WHITE}]\n\_> ${YELLOW}Action: ${RED}PHP/${varfilter//$'\r'/} ${WHITE}-> ${GREEN}${vercrr}: ${BLUE}${chkmsg}${RESET}"
+            echo -e "${RED}[!] Vulnerable host ${WHITE}[${CYAN}${source_schema:-http}://${url}:$port${WHITE}]\n\_> ${YELLOW}Action: ${RED}PHP/${varfilter//$'\r'/} ${WHITE}-> ${GREEN}${vercrr}: ${BLUE}${chkmsg}${RESET}"
+
+            [[ "${outputc}" == 1 ]] && output
 
             if ! rm -rf "${outputsite}/outputs/${url}" ; then : ;fi
             return 0
@@ -312,11 +374,13 @@ function localcheck(){
         return 127
    fi
 
-    local phpver="$(php -v | cut -d " " -f2 | head -n1)"
-    local phpbranch="$(  echo "${phpver//$'\r'/}" | awk -F'.' '{print $1 $2}')"
-    local phpfullver="$( echo "${phpver//$'\r'/}" | awk -F'.' '{print $1 $2 $3}')"
-    local phpini="$(php --ini)"
-    local phpr="$(php -r 'printf("PHP=%s SAPI=%s\n", PHP_VERSION, PHP_SAPI);')"
+    phpver="$(php -v | cut -d " " -f2 | head -n1)"
+    phpbranch="$(  echo "${phpver//$'\r'/}" | awk -F'.' '{print $1 $2}')"
+    phpfullver="$( echo "${phpver//$'\r'/}" | awk -F'.' '{print $1 $2 $3}')"
+    phpini="$(php --ini)"
+    phpr="$(php -r 'printf("PHP=%s SAPI=%s\n", PHP_VERSION, PHP_SAPI);')"
+
+    [ "$bar" -eq 0 ] && loading_bar
 
     echo -e "\n${GREEN}PHP Version: ${WHITE}${phpr} ${BLUE}\n\nPaths:\n${YELLOW}${phpini}${RESET}"
 
@@ -328,6 +392,7 @@ function localcheck(){
 
         if [[ "${phpbranch}" == "${chkver}" && "${phpfullver}" -ge "${vercrr//./}" ]]; then
             echo -e "${GREEN}[+] Not Vulnerable!${RESET}"
+            [[ "${outputc}" == 1 ]] && output
             return 0
         fi
         
@@ -339,6 +404,63 @@ function localcheck(){
     done
 
     echo -e "\n${RED}[!] Vulnerable host ${WHITE}[${CYAN}php://${USER:-root}@${HOSTNAME}:${PWD}#${WHITE}]\n\_> ${YELLOW}Action: ${RED}PHP/${phpver//$'\r'/} ${WHITE}-> ${GREEN}${vercrr}: ${BLUE}${chkmsg}${RESET}"
+    [[ "${outputc}" == 1 ]] && output
+
+}
+
+function output(){
+
+    local type="$(echo "${outf}" | cut -d: -f1)"
+    local file="$(echo "${outf}" | cut -d: -f2)"
+
+    [[ "${type}" != "csv" ]] && { echo -e "\n${RED}[!] CSV only support!${RESET}" ; return 1;}
+
+    if ! [[ "${separator:-,}" =~ ^[|,\:\;]$ ]]; then
+        echo -e "\n${RED}[!] Invalid delimiter! ${WHITE}Supported: ${GREEN}| , : ; ${RESET}"
+        return 1
+    fi
+
+    if [[ -z "${type}" || -z "${file}" ]]; then
+        echo -e "\n${RED}[!] Empty file name or format!${RESET}"
+        return 1
+    fi
+
+    if [[ ! "${type}" =~ ^[a-zA-Z]{3,4}+$ || ! "${file}" =~ ^[a-zA-Z0-9_-]+$ ]]; then
+        echo -e "\n${RED}[!] Invalid format or file name!${RESET}"
+        return 1
+    fi
+
+    local outputfl="$outputsite/outputs/${file}-${url}.${type}"
+    local randomId=$(( RANDOM * 32768 + RANDOM ))
+
+    if [[ "${type}" == "csv" ]]; then
+        echo -e "id${separator}phpbranch${separator}phpfullver${separator}chkver${separator}vercrr${separator}chkmsg\n${randomId}${separator}$phpbranch${separator}$phpfullver${separator}$chkver${separator}$vercrr${separator}$chkmsg" > "${outputfl}"
+    elif [[ "${type}" == "json" ]]; then
+
+        echo -e "[
+  {
+    \"id\": "${randomId}",
+    \"phpbranch\": \"$phpbranch\",
+    \"phpfullver\": \"$phpfullver\",
+    \"chkver\": \"$chkver\",
+    \"vercrr\": \"$vercrr\",
+    \"chkmsg\": \"$chkmsg\"
+  }
+]" > "${outputfl}"
+
+    elif [[ "${type}" == "yaml" || "${type}" == "yml" ]]; then
+
+        echo -e "- id: ${randomId}
+  phpbranch: ${phpbranch}
+  phpfullver: ${phpfullver}
+  chkver: ${chkver}
+  vercrr: \"${vercrr}\"
+  chkmsg: \"${chkmsg}\"" > "${outputfl}"
+
+    else
+        echo -e "\n${RED}[!] File format not recognized!${RESET}"
+        return 1
+    fi
 
 }
 
@@ -346,13 +468,15 @@ function localcheck(){
 # Banner
 #=================================
 
-cat <<BANNER
+cat <<BANNER 
+${YELLOW}
    ___  __ _____  ___  ______ ________   __      _______ _____________ __
   / _ \/ // / _ \|_  |/ __/ // / __/ /  / / ____/ ___/ // / __/ ___/ //_/
  / ___/ _  / ___/ __/_\ \/ _  / _// /__/ /_/___/ /__/ _  / _// /__/ ,<   
 /_/  /_//_/_/  /____/___/_//_/___/____/____/   \___/_//_/___/\___/_/|_|  
-                                                                         
-By: @Pauloxc6
+
+${BLUE}Version: ${WHITE}${version}                                                                         
+${BLUE}By: ${RED}@Pauloxc6${RESET}
 BANNER
 
 #=================================
@@ -360,6 +484,11 @@ BANNER
 #=================================
 
 if [ -z "$1" ]; then __help__ ; fi
+
+if [[ "$*" =~ " --uri " ]] && { [[ "$*" =~ " -u " ]] || [[ "$*" =~ " --url " ]] || [[ "$*" =~ " -p " ]] || [[ "$*" =~ " --port " ]]; }; then
+    echo -e "${RED}[!] You can't use ${BLUE}--uri ${RED}together with ${WHITE}-u/--url ${RED}or ${WHITE}-p/--port!${RESET}"
+    exit 1
+fi
 
 while [ $# -gt 0 ]; do
     case "$1" in
@@ -371,9 +500,21 @@ while [ $# -gt 0 ]; do
         -c|--cookie) shift ; cookiecurl="$1"     ;;
         -a|--user-agent) shift ; useragent="$1"  ;;
         -s|--ssl) shift ; ssl_on=1 ;;
+        -o|--output) shift ; outputc="1" ; outf="$1" ;;
+        -f|--separator) shift ; separator="$1" ;;
+        --uri) shift ; uri_source="$1" ; uri=1 ;;
+        --no-bar) bar=1 ;;
     esac
     shift
 done
+
+#=================================
+# URI Vars
+#=================================
+
+source_formated="${uri_source//\:\/\// }"
+source_schema=$(echo "${source_formated}" | cut -d " " -f1)
+source_authority=$(echo "${source_formated}" | cut -d " " -f2)
 
 #=================================
 # Check Connection
