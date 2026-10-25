@@ -281,7 +281,7 @@ function web(){
                 if [[ "${phpbranch}" == "${chkver}" && "${phpfullver}" -ge "${vercrr//./}" ]]; then
                     echo -e "${GREEN}[+] Not Vulnerable!${GREEN}"
                     if ! rm -rf "${outputsite}/outputs/${url}" ; then : ;fi
-                    exit 1
+                    return 0
                 fi
 
                 if [[ "${phpbranch}" == "${chkver}" && "${phpfullver}" -le "${vercrr//./}" ]]; then
@@ -294,6 +294,7 @@ function web(){
             echo -e "${RED}[!] Vulnerable host ${WHITE}[${CYAN}http://${url}:$port${WHITE}]\n\_> ${YELLOW}Action: ${RED}PHP/${varfilter//$'\r'/} ${WHITE}-> ${GREEN}${vercrr}: ${BLUE}${chkmsg}${RESET}"
 
             if ! rm -rf "${outputsite}/outputs/${url}" ; then : ;fi
+            return 0
         fi
     done < <(grep -i "^x-powered-by:" "$outputfile" | cut -d ":" -f2-)
     
@@ -307,8 +308,8 @@ function localcheck(){
    echo -e "${GREEN}[${WHITE}*${GREEN}] Checking Connection With: ${BLUE}php://${USER:-root}@${HOSTNAME}:${PWD}/#${RESET}"
 
    if ! [[ -x "$(command -v php)" ]]; then
-        echo "${RED}[!] PHP não está instalado!${RESET}"
-        exit 1
+        echo -e "${RED}[!] PHP is not installed!${RESET}"
+        return 127
    fi
 
     local phpver="$(php -v | cut -d " " -f2 | head -n1)"
@@ -327,7 +328,7 @@ function localcheck(){
 
         if [[ "${phpbranch}" == "${chkver}" && "${phpfullver}" -ge "${vercrr//./}" ]]; then
             echo -e "${GREEN}[+] Not Vulnerable!${RESET}"
-            exit 1
+            return 0
         fi
         
         if [[ "${phpbranch}" == "${chkver}" && "${phpfullver}" -le "${vercrr//./}" ]]; then
