@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>php2shell-check — PHP Security & Auditing Tool</title>
+        <meta name="description" content="Bash utility for automated security auditing of PHP web servers, version detection, WAF inspection, and SSL verification." />
+        <link rel="stylesheet" href="./assets/style.css" />
+        <link rel="icon" type="image/svg+xml" href="./public/favicon.svg" />
+    </head>
+    <body>
+        <header>
+            <div class="header-inner">
+                <div class="brand">
+                    <div class="brand">
+                        <div class="brand-icon">🛡️</div>
+                        <a href="index.html">php2shell-check</a>
+                        <span class="badge" id="dynamic-version-badge">Carregando...</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div class="layout">
+            <main class="content full-width-content" style="max-width: 1000px; margin: 0 auto">
+                <section style="text-align: center; padding: 40px 0">
+                    <div class="hero-label" style="color: var(--accent); font-size: 12px; letter-spacing: 2px; margin-bottom: 8px">BASH SECURITY TOOL</div>
+                    <h1 style="font-size: 40px; margin-bottom: 16px">php2shell-check</h1>
+                    <p style="font-size: 16px; max-width: 700px; margin: 0 auto 24px; color: var(--text-muted)">
+                        Automated auditing of PHP web servers, vulnerable version detection, WAF inspection, and SSL certificates directly from the terminal.
+                    </p>
+                    <div style="display: flex; gap: 12px; justify-content: center">
+                        <a href="https://github.com/Pauloxc6/php2shell-check" target="_blank" rel="noopener" class="button primary">View on GitHub ↗</a>
+                        <a href="https://github.com/Pauloxc6/php2shell-check/archive/refs/heads/main.zip" class="button">Download ZIP ↓</a>
+                        <a href="./vuln.html" class="button">Info Vulnerability ↗</a>
+                    </div>
+                </section>
+
+                <section style="background: rgba(248, 81, 73, 0.05); border: 1px solid rgba(248, 81, 73, 0.3); border-radius: var(--radius); padding: 24px; margin: 30px 0">
+                    <h3 style="color: var(--danger); margin-top: 0">What is the "PHP-to-Shell" Risk?</h3>
+                    <p>
+                        Historically and in modern misconfigured environments, poorly isolated PHP web applications can expose attack surfaces where unvalidated inputs allow direct execution of
+                        arbitrary commands in the operating system shell.
+                    </p>
+                    <p style="margin-bottom: 0"><strong>php2shell-check</strong> automates preventive scanning, checking target behavior, evaluated PHP versions, and exposure risks.</p>
+                </section>
+
+                <section>
+                    <h2>Operation Modes</h2>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin-top: 20px">
+                        <div style="background: var(--bg-secondary); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px">
+                            <h3 style="display: flex; justify-content: space-between; align-items: center">Web Mode 🌐 <span class="badge">Active</span></h3>
+                            <p>Performs custom HTTP/HTTPS requests against remote targets to inspect response headers, PHP-exposed headers, WAF detection, and SSL validation.</p>
+                            <code>-m web</code>
+                        </div>
+                        <div style="background: var(--bg-secondary); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px">
+                            <h3 style="display: flex; justify-content: space-between; align-items: center">
+                                Local Mode 💻 <span class="badge" style="background: rgba(56, 139, 253, 0.15); color: #58a6ff; border-color: #58a6ff">CLI</span>
+                            </h3>
+                            <p>Inspects the local PHP environment running via CLI to verify php.ini security configurations and installed versions.</p>
+                            <code>-m local</code>
+                        </div>
+                    </div>
+                </section>
+
+                <section style="margin-top: 40px">
+                    <h2>Quick Installation & Usage</h2>
+                    <div class="code-wrapper">
+                        <button class="copy-button">Copy</button>
+                        <pre><code>git clone https://github.com/Pauloxc6/php2shell-check.git
+cd php2shell-check
+bash php2shell-check.sh --help</code></pre>
+                    </div>
+                </section>
+
+                <footer>
+                    <span>php2shell-check — Official Documentation</span>
+                    <span>•</span>
+                    <span>Built with Linux &lt;3 @2026</span>
+                    <div class="footer-links">
+                        <a href="index.html">Home</a>
+                        <a href="terms.html">Terms of Use</a>
+                    </div>
+                </footer>
+            </main>
+        </div>
+        <script src="./assets/script.js"></script>
+    </body>
+</html>

@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>PHP Emergency Patches: PHP2Shell RCE Flaws — php2shell-check</title>
+        <meta
+            name="description"
+            content="Security Advisory: PHP issues emergency patches for two critical PHP2Shell RCE vulnerabilities (CVE-2026-109618 & CVE-2026-109619) affecting millions of servers."
+        />
+        <link rel="stylesheet" href="./assets/style.css" />
+        <link rel="icon" type="image/svg+xml" href="./public/favicon.svg" />
+    </head>
+    <body>
+        <header>
+            <div class="header-inner">
+                <div class="brand">
+                    <div class="brand-icon">🛡️</div>
+                    <a href="index.html">php2shell-check</a>
+                    <span class="badge" id="dynamic-version-badge">Carregando...</span>
+                </div>
+            </div>
+        </header>
+
+        <div class="layout">
+            <main class="content full-width-content" style="max-width: 1000px; margin: 0 auto">
+                <section style="text-align: center; padding: 40px 0">
+                    <div class="hero-label" style="color: var(--danger); font-size: 12px; letter-spacing: 2px; margin-bottom: 8px">CRITICAL SECURITY ADVISORY</div>
+                    <h1 style="font-size: 38px; margin-bottom: 16px">PHP Issues Emergency Patches for PHP2Shell RCE Flaws</h1>
+                    <p style="font-size: 16px; max-width: 750px; margin: 0 auto 24px; color: var(--text-muted)">
+                        Two critical Remote Code Execution (RCE) vulnerabilities affect the core PHP runtime across all versions from PHP 5.4 up to 8.5. Immediate patching and server restarts are
+                        required.
+                    </p>
+                    <div style="display: flex; gap: 12px; justify-content: center">
+                        <a href="https://thehackernews.com/2026/10/php-issues-emergency-patches-for-two.html" target="_blank" rel="noopener" class="button primary">Read Source Article ↗</a>
+                        <a href="index.html" class="button">Back to Overview ←</a>
+                    </div>
+                </section>
+
+                <section style="background: rgba(248, 81, 73, 0.08); border: 1px solid rgba(248, 81, 73, 0.4); border-radius: var(--radius); padding: 24px; margin: 20px 0">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px">
+                        <h3 style="color: var(--danger); margin: 0">⚠️ High Risk Threat: PHP2Shell</h3>
+                        <span class="badge" style="background: rgba(248, 81, 73, 0.2); color: #f85149; border-color: #f85149">CVSS 9.2 (Critical)</span>
+                    </div>
+                    <p>
+                        On October 21, 2026, the PHP development team released emergency security updates for two core runtime flaws that allow unauthenticated attackers to achieve Remote Code
+                        Execution (RCE) or read sensitive process memory on target servers.
+                    </p>
+                    <p style="margin-bottom: 0">
+                        Because these flaws exist within the PHP engine itself rather than application-level code (like WordPress or Laravel), even a basic, static PHP endpoint can be susceptible to
+                        compromise. Active exploit attempts have been detected globally.
+                    </p>
+                </section>
+
+                <section style="margin-top: 30px">
+                    <h2>Tracked Vulnerabilities</h2>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; margin-top: 20px">
+                        <div style="background: var(--bg-secondary); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px">
+                            <h3 style="margin-top: 0">CVE-2026-109618</h3>
+                            <div style="margin-bottom: 12px"><span class="badge">RCE via OOM Memory Corruption</span></div>
+                            <p style="font-size: 14px; color: var(--text-muted)">
+                                Triggered when a request forces PHP to run out of memory. During process termination, incomplete internal data structures are handled as valid during cleanup, causing
+                                memory corruption that attackers can leverage for remote execution.
+                            </p>
+                        </div>
+                        <div style="background: var(--bg-secondary); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px">
+                            <h3 style="margin-top: 0">CVE-2026-109619</h3>
+                            <div style="margin-bottom: 12px"><span class="badge">RCE via Stale Global State</span></div>
+                            <p style="font-size: 14px; color: var(--text-muted)">
+                                A Use-After-Free (CWE-416) condition where internal request pointers persist across requests within long-running worker processes. Subsequent requests handled by the
+                                same worker can read or manipulate freed memory state.
+                            </p>
+                        </div>
+                    </div>
+                </section>
+
+                <section style="margin-top: 40px">
+                    <h2>Affected Versions & Patches</h2>
+                    <p>Upstream patches have been released for actively supported PHP branches. Check your server's runtime version immediately:</p>
+
+                    <div style="overflow-x: auto; margin-top: 16px">
+                        <table style="width: 100%; border-collapse: collapse; background: var(--bg-secondary); border-radius: var(--radius); overflow: hidden">
+                            <thead>
+                                <tr style="border-bottom: 1px solid var(--border); text-align: left; background: rgba(255, 255, 255, 0.02)">
+                                    <th style="padding: 12px 16px">PHP Branch</th>
+                                    <th style="padding: 12px 16px">Status</th>
+                                    <th style="padding: 12px 16px">First Fixed Version</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr style="border-bottom: 1px solid var(--border)">
+                                    <td style="padding: 12px 16px">PHP 8.5</td>
+                                    <td style="padding: 12px 16px"><span style="color: var(--danger)">Vulnerable below 8.5.12</span></td>
+                                    <td style="padding: 12px 16px"><strong>8.5.12</strong></td>
+                                </tr>
+                                <tr style="border-bottom: 1px solid var(--border)">
+                                    <td style="padding: 12px 16px">PHP 8.4</td>
+                                    <td style="padding: 12px 16px"><span style="color: var(--danger)">Vulnerable below 8.4.27</span></td>
+                                    <td style="padding: 12px 16px"><strong>8.4.27</strong></td>
+                                </tr>
+                                <tr style="border-bottom: 1px solid var(--border)">
+                                    <td style="padding: 12px 16px">PHP 8.3</td>
+                                    <td style="padding: 12px 16px"><span style="color: var(--danger)">Vulnerable below 8.3.36</span></td>
+                                    <td style="padding: 12px 16px"><strong>8.3.36</strong></td>
+                                </tr>
+                                <tr style="border-bottom: 1px solid var(--border)">
+                                    <td style="padding: 12px 16px">PHP 8.2</td>
+                                    <td style="padding: 12px 16px"><span style="color: var(--danger)">Vulnerable below 8.2.35</span></td>
+                                    <td style="padding: 12px 16px"><strong>8.2.35</strong></td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 12px 16px">PHP 8.1 & earlier (EOL)</td>
+                                    <td style="padding: 12px 16px"><span style="color: var(--danger)">Vulnerable (No upstream patch)</span></td>
+                                    <td style="padding: 12px 16px">Requires Vendor / ELS / Source Backport</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <section style="margin-top: 40px">
+                    <h2>Auditing with php2shell-check</h2>
+                    <p>You can use <code>php2shell-check</code> in local mode to verify if your active local runtime or server CLI build is vulnerable:</p>
+
+                    <div class="code-wrapper">
+                        <button class="copy-button">Copy</button>
+                        <pre><code># Run local CLI environment audit
+bash php2shell-check.sh -m local
+
+# Run remote HTTP inspection for exposed PHP signatures
+bash php2shell-check.sh -m web -s -u https://your-domain.com</code></pre>
+                    </div>
+                </section>
+
+                <section style="margin-top: 40px; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px">
+                    <h2>Recommended Remediation Steps</h2>
+                    <ol style="padding-left: 20px; line-height: 1.8">
+                        <li>
+                            <strong>Update System Packages:</strong> Upgrade your PHP binaries via system package managers (e.g. <code>apt upgrade php</code>, <code>dnf update php</code>) or pull
+                            updated Docker image tags.
+                        </li>
+                        <li>
+                            <strong>Restart Web Processing Workers:</strong> Ensure you restart <code>php-fpm</code>, <code>apache2</code>, <code>nginx</code>, or any container workers so updated
+                            binaries take effect in memory.
+                        </li>
+                        <li>
+                            <strong>Enable WAF Protections:</strong> If immediate patching is delayed, activate Web Application Firewall rules (e.g. Cloudflare / AWS WAF) to block suspicious multipart
+                            payloads.
+                        </li>
+                        <li><strong>Audit Log Entries:</strong> Watch for HTTP 500 errors, unusual Out-Of-Memory logs, oversized <code>PHPSESSID</code> cookies, or unexpected worker restarts.</li>
+                    </ol>
+                </section>
+
+                <footer>
+                    <span>php2shell-check — Official Documentation</span>
+                    <span>•</span>
+                    <span>Built with Linux &lt;3 @2026</span>
+                    <div class="footer-links">
+                        <a href="index.html">Home</a>
+                        <a href="terms.html">Terms of Use</a>
+                    </div>
+                </footer>
+            </main>
+        </div>
+        <script src="./assets/script.js"></script>
+    </body>
+</html>

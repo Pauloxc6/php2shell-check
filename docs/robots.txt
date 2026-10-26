@@ -1,0 +1,4 @@
+User-Agent: *
+Allow: /
+
+Sitemap: https://pauloxc6.github.io/php2shell-check/public/sitemap.xml
