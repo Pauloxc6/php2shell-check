@@ -18,7 +18,7 @@ export WHITE=$'\e[37;1m'
 hostCheck="google.com"
 
 bar=0
-version="v1.2.1"
+version="v1.3.0"
 
 #=================================
 # Messages
