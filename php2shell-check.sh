@@ -18,7 +18,10 @@ export WHITE=$'\e[37;1m'
 hostCheck="google.com"
 
 bar=0
-version="v1.3.0"
+version="v1.4.0"
+vulnon="not vulnerable"
+separator=","
+separator_on="off"
 
 #=================================
 # Messages
@@ -66,10 +69,10 @@ function debug(){
     # shellcheck disable=SC2329
     function cleanup(){
         set +x
-        echo -e "${WHITE}[${BLUE}DEBUG${WHITE}](${CYAN}$(date +'%T / %F')${WHITE}) ${BLUE}Finalizando depuração!${RESET}"
+        echo -e "${WHITE}[${BLUE}DEBUG${WHITE}](${CYAN}$(date +'%T / %F')${WHITE}) ${BLUE}Finishing debugging!${RESET}"
     }
 
-    echo -e "${WHITE}[${BLUE}DEBUG${WHITE}](${CYAN}$(date +'%T / %F')${WHITE}) ${BLUE}Inicinado depuração!${RESET}"
+    echo -e "${WHITE}[${BLUE}DEBUG${WHITE}](${CYAN}$(date +'%T / %F')${WHITE}) ${BLUE}Started debugging!${RESET}"
 
     set -x
 
@@ -94,7 +97,7 @@ Options:
     -c, --cookie <string>    Cookie string to include in requests (e.g., session cookies)
     -a, --user-agent <str>   Custom User-Agent string
     -s, --ssl                Enable HTTPS/SSL connection
-    --no-bar                 Disables the progress bar (Useful for crontab services)
+    --no-bar                 Disables the progress bar
 
     Output:
     -o, --output             Enable the saving of information! Ex: -o csv:foo (CSV, JSON, YAML)
@@ -240,7 +243,7 @@ function web(){
         port=$( echo "${source_authority}" | cut -d: -f2)
     fi
 
-    outputsite=$(pwd)
+    outputsite="$(cd "$(dirname "$0")" && pwd)"
     outputfile="$outputsite/outputs/$url/site.temp"
 
     echo -e "${GREEN}[${WHITE}*${GREEN}] Checking Connection With: ${BLUE}${source_schema:-http}://${url}:${port}${RESET}"
@@ -259,7 +262,7 @@ function web(){
         return 1
     fi
 
-    # Testa se o diretório existe
+    # Tests if the directory exists
     if [[ -d "${outputsite}" ]]; then
         echo -e "${WHITE}[${GREEN}+${WHITE}] ${GREEN}The directory ${YELLOW}${outputsite}/$url ${GREEN}has been successfully created!${RESET}"
     else
@@ -267,7 +270,7 @@ function web(){
         exit 1
     fi
 
-    # Testa se está ativado o SSL
+    # Test if SSL is enabled
     # shellcheck disable=SC2154
     if [[ "${ssl_on:-0}" == 1 ]]; then
         if __check_ssl; then
@@ -310,17 +313,17 @@ function web(){
     # WAF Check
     waf_check
 
-    # imprime o último
+    # Prints the last
     if [[ -n "$current_version" ]]; then
         echo -e "${WHITE}[${BLUE}-${WHITE}] ${CYAN}HTTP: ${WHITE}${current_version:-NULL} ${CYAN}| Status: ${WHITE}${current_status:-NULL} ${CYAN}| Location: ${WHITE}${current_location:-NULL}${RESET}"
     fi
 
-    # Identifica o tipo de servidor
+    # Identifies the server type
     while IFS= read -r serverType; do
         echo -e "${WHITE}[${BLUE}-${WHITE}] ${CYAN}Server: ${WHITE}${serverType:-NULL}${RESET}"
     done < <(grep -i "^server:" "${outputfile}" | cut -d ' ' -f2)
 
-    # Identifica a linguagem de programação
+    # Identifies the programming language
     while IFS= read -r langType; do
         if [ "${langType}" ]; then
             echo -e "${WHITE}[${BLUE}-${WHITE}] ${CYAN}Lang:${WHITE}${langType:-NULL}${RESET}"
@@ -339,6 +342,7 @@ function web(){
 
                 if [[ "${phpbranch}" == "${chkver}" && "${phpfullver}" -ge "${vercrr//./}" ]]; then
                     echo -e "${GREEN}[+] Not Vulnerable!${GREEN}"
+                    vulnon="not vulnerable"
                     [[ "${outputc}" == 1 ]] && output
                     if ! rm -rf "${outputsite}/outputs/${url}" ; then : ;fi
                     return 0
@@ -352,6 +356,8 @@ function web(){
             done
 
             echo -e "${RED}[!] Vulnerable host ${WHITE}[${CYAN}${source_schema:-http}://${url}:$port${WHITE}]\n\_> ${YELLOW}Action: ${RED}PHP/${varfilter//$'\r'/} ${WHITE}-> ${GREEN}${vercrr}: ${BLUE}${chkmsg}${RESET}"
+
+            vulnon="vulnerable"
 
             [[ "${outputc}" == 1 ]] && output
 
@@ -392,6 +398,7 @@ function localcheck(){
 
         if [[ "${phpbranch}" == "${chkver}" && "${phpfullver}" -ge "${vercrr//./}" ]]; then
             echo -e "${GREEN}[+] Not Vulnerable!${RESET}"
+            vulnon="not vulnerable"
             [[ "${outputc}" == 1 ]] && output
             return 0
         fi
@@ -404,6 +411,7 @@ function localcheck(){
     done
 
     echo -e "\n${RED}[!] Vulnerable host ${WHITE}[${CYAN}php://${USER:-root}@${HOSTNAME}:${PWD}#${WHITE}]\n\_> ${YELLOW}Action: ${RED}PHP/${phpver//$'\r'/} ${WHITE}-> ${GREEN}${vercrr}: ${BLUE}${chkmsg}${RESET}"
+    vulnon="vulnerable"
     [[ "${outputc}" == 1 ]] && output
 
 }
@@ -413,9 +421,11 @@ function output(){
     local type="$(echo "${outf}" | cut -d: -f1)"
     local file="$(echo "${outf}" | cut -d: -f2)"
 
-    [[ "${type}" != "csv" ]] && { echo -e "\n${RED}[!] CSV only support!${RESET}" ; return 1;}
+    [[ "${separator_on}" == "on" ]] &&  { [[ "$type" =~ "json" ]] || [[ "$type" =~ "yml" ]] || [[ "$type" =~ "yaml" ]] ;} && { 
+        echo -e "\n${RED}[!] Only CSV is suppotated with the separator!${RESET}" ; exit 1
+    }
 
-    if ! [[ "${separator:-,}" =~ ^[|,\:\;]$ ]]; then
+    if ! [[ "${separator}" =~ ^[|,\:\;]$ ]]; then
         echo -e "\n${RED}[!] Invalid delimiter! ${WHITE}Supported: ${GREEN}| , : ; ${RESET}"
         return 1
     fi
@@ -434,7 +444,7 @@ function output(){
     local randomId=$(( RANDOM * 32768 + RANDOM ))
 
     if [[ "${type}" == "csv" ]]; then
-        echo -e "id${separator}phpbranch${separator}phpfullver${separator}chkver${separator}vercrr${separator}chkmsg\n${randomId}${separator}$phpbranch${separator}$phpfullver${separator}$chkver${separator}$vercrr${separator}$chkmsg" > "${outputfl}"
+        echo -e "id${separator}phpbranch${separator}phpfullver${separator}chkver${separator}vercrr${separator}chkmsg${separator}vuln\n${randomId}${separator}$phpbranch${separator}$phpfullver${separator}$chkver${separator}$vercrr${separator}$chkmsg${separator}${vulnon}" > "${outputfl}"
     elif [[ "${type}" == "json" ]]; then
 
         echo -e "[
@@ -444,7 +454,8 @@ function output(){
     \"phpfullver\": \"$phpfullver\",
     \"chkver\": \"$chkver\",
     \"vercrr\": \"$vercrr\",
-    \"chkmsg\": \"$chkmsg\"
+    \"chkmsg\": \"$chkmsg\",
+    \"vuln\": \"$vulnon\"
   }
 ]" > "${outputfl}"
 
@@ -455,7 +466,8 @@ function output(){
   phpfullver: ${phpfullver}
   chkver: ${chkver}
   vercrr: \"${vercrr}\"
-  chkmsg: \"${chkmsg}\"" > "${outputfl}"
+  chkmsg: \"${chkmsg}\"
+  vuln: \"${vulnon}\"" > "${outputfl}"
 
     else
         echo -e "\n${RED}[!] File format not recognized!${RESET}"
@@ -501,7 +513,7 @@ while [ $# -gt 0 ]; do
         -a|--user-agent) shift ; useragent="$1"  ;;
         -s|--ssl) shift ; ssl_on=1 ;;
         -o|--output) shift ; outputc="1" ; outf="$1" ;;
-        -f|--separator) shift ; separator="$1" ;;
+        -f|--separator) shift ; separator="$1" ; separator_on="on" ;;
         --uri) shift ; uri_source="$1" ; uri=1 ;;
         --no-bar) bar=1 ;;
     esac
