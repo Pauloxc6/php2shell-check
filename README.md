@@ -110,7 +110,7 @@ Options:
     -c, --cookie <string>    Cookie string to include in requests (e.g., session cookies)
     -a, --user-agent <str>   Custom User-Agent string
     -s, --ssl                Enable HTTPS/SSL connection
-    --no-bar                 Disables the progress bar (Useful for crontab services)
+    --no-bar                 Disables the progress bar
 
     Output:
     -o, --output             Enable the saving of information! Ex: -o csv:foo (CSV, JSON, YAML)
@@ -139,6 +139,31 @@ Examples:
 
 ```bash
 ./php2shell-check.sh -m local
+```
+
+**3. Scan multiple remote targets via file:**
+
+```bash
+while IFS= read -r line; do
+    ip="$(   echo "${line}" | awk -F: '{print $1}' )"
+    port="$( echo "${line}" | awk -F: '{print $2}' )"
+    ./php2shell-check.sh --uri php://"${ip}":"${port}" -m web --no-bar
+done < "ips_list.txt"
+
+ips_list.txt
+10.0.0.1:8080
+10.0.1.2:8080
+10.0.0.10:80
+10.0.2.5:443
+```
+
+**4. Using the Crontab Service:***
+
+```bash
+* * * * * /opt/php2shell-check.sh --uri php://server001:80 -m web --no-bar -o json:log-server001
+
+# Read
+tail -f /opt/output/log-server.json | jq -r '.[].vuln'
 ```
 
 ---
