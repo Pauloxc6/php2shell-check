@@ -1,0 +1,80 @@
+version: "3.8"
+
+services:
+    mysql:
+        image: mysql:8.0
+        container_name: app_mysql
+        environment:
+            MYSQL_ROOT_PASSWORD: rootpassword
+            MYSQL_DATABASE: app_db
+            MYSQL_USER: app_user
+            MYSQL_PASSWORD: app_password
+        ports:
+            - "3306:3306"
+        volumes:
+            - mysql_data:/var/lib/mysql
+        networks:
+            - app-net
+
+    php56:
+        image: php:5.6-cli
+        container_name: php_5_6
+        volumes:
+            - .:/app
+        working_dir: /app
+        ports:
+            - "8080:8080"
+        command: php -S 0.0.0.0:8080 router.php
+        depends_on:
+            - mysql
+        networks:
+            - app-net
+
+    php82:
+        image: php:8.2-cli
+        container_name: php_8_2
+        volumes:
+            - .:/app
+        working_dir: /app
+        ports:
+            - "8082:8082"
+        command: php -S 0.0.0.0:8082 router.php
+        depends_on:
+            - mysql
+        networks:
+            - app-net
+
+    php84:
+        image: php:8.4-cli
+        container_name: php_8_4
+        volumes:
+            - .:/app
+        working_dir: /app
+        ports:
+            - "8081:8081"
+        command: php -S 0.0.0.0:8081 router.php
+        depends_on:
+            - mysql
+        networks:
+            - app-net
+
+    php8426:
+        image: php:8.4.26-cli
+        container_name: php_8_4_26
+        volumes:
+            - .:/app
+        working_dir: /app
+        ports:
+            - "8083:8083"
+        command: php -S 0.0.0.0:8083 router.php
+        depends_on:
+            - mysql
+        networks:
+            - app-net
+
+volumes:
+    mysql_data:
+
+networks:
+    app-net:
+        driver: bridge
