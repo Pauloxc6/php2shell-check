@@ -23,14 +23,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
         fetch(`https://api.github.com/repos/${repoOwner}/${repoName}/releases/latest`)
             .then(response => {
-                if (!response.ok) throw new Error("Erro ao buscar versão");
+                if (!response.ok) throw new Error("EError fetching version");
                 return response.json();
             })
             .then(data => {
                 badgeElement.textContent = data.tag_name;
             })
             .catch(error => {
-                console.warn("Não foi possível carregar a versão do GitHub, mantendo fallback.", error);
-                badgeElement.textContent = "v1.2.1";
+                console.warn("Unable to upload version from GitHub, keeping fallback", error);
+                badgeElement.textContent = "v1.4.1";
             });
     });
