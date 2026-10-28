@@ -18,7 +18,7 @@ export WHITE=$'\e[37;1m'
 hostCheck="google.com"
 
 bar=0
-version="v1.4.1"
+version="v1.4.2"
 vulnon="not vulnerable"
 separator=","
 separator_on="off"

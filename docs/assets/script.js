@@ -31,6 +31,6 @@ document.addEventListener("DOMContentLoaded", function () {
             })
             .catch(error => {
                 console.warn("Unable to upload version from GitHub, keeping fallback", error);
-                badgeElement.textContent = "v1.4.1";
+                badgeElement.textContent = "v1.4.2";
             });
     });
