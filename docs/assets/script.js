@@ -23,7 +23,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         fetch(`https://api.github.com/repos/${repoOwner}/${repoName}/releases/latest`)
             .then(response => {
-                if (!response.ok) throw new Error("EError fetching version");
+                if (!response.ok) throw new Error("Error fetching version");
                 return response.json();
             })
             .then(data => {
